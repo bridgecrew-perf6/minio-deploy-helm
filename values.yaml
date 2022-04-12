@@ -1,0 +1,210 @@
+global:
+  minio: {}
+#  minio:
+#    existingSecret: ""
+#    accessKey: ""
+#    secretKey: ""
+#  imageRegistry: myRegistryName
+#  imagePullSecrets:
+#    - myRegistryKeySecretName
+#   storageClass: myStorageClass
+
+## Bitnami MinIO(R) image version
+## ref: https://hub.docker.com/r/bitnami/minio/tags/
+##
+
+replicaCount: 1
+
+image:
+  registry: docker.io
+  repository: minio/minio:RELEASE.2021-06-07T21-40-51Z
+ 
+  pullPolicy: IfNotPresent
+
+  debug: false
+
+## Force target Kubernetes version (using Helm capabilites if not set)
+##
+kubeVersion:
+
+## String to partially override common.names.fullname template (will maintain the release name)
+##
+# nameOverride:
+
+## String to fully override common.names.fullname template
+##
+fullnameOverride: minio
+
+
+commonLabels:
+    app.shashacloud.io/name: minio
+    app.shashacloud.io/managed-by: shasha
+    app.shashacloud.io/created-by: shasha
+
+
+## Cluster domain
+##
+clusterDomain: cluster.local
+commonLabels:
+    app.shashacloud.io/name: minio
+    app.shashacloud.io/managed-by: shasha
+    app.shashacloud.io/created-by: shasha
+
+
+## Bitnami MinIO(R) Client image version
+## ref: https://hub.docker.com/r/bitnami/minio-client/tags/
+##
+clientImage:
+  registry: docker.io
+  repository: bitnami/minio-client
+  tag: 2019-06-01T03-46-14Z
+
+## Init containers parameters:
+## volumePermissions: Change the owner and group of the persistent volume mountpoint to runAsUser:fsGroup values from the securityContext section.
+##
+volumePermissions:
+  enabled: false
+  image:
+    registry: docker.io
+    repository: bitnami/bitnami-shell
+    tag: "10"
+    pullPolicy: Always
+    ## Optionally specify an array of imagePullSecrets.
+    ## Secrets must be manually created in the namespace.
+    ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/
+    ##
+    # pullSecrets:
+    #   - myRegistryKeySecretName
+  ## Init container' resource requests and limits
+  ## ref: http://kubernetes.io/docs/user-guide/compute-resources/
+  ##
+  
+## MinIO(R) server mode. Allowed values: standalone or distributed.
+## Distributed Minio ref: https://docs.minio.io/docs/distributed-minio-quickstart-guide
+##
+mode: standalone
+
+## MinIO(R) deployment parameters
+## Only when mode is 'standalone'
+##
+deployment:
+  labels:
+   app.shashacloud.io/name: minio
+   app.shashacloud.io/managed-by: shasha
+   app.shashacloud.io/created-by: shasha
+
+  replicaCount: 1
+
+  updateStrategy:
+    type: RollingUpdate
+
+
+## MinIO(R) credentials
+##
+accessKey:
+  ## MinIO(R) Access Key
+  ## ref: https://github.com/bitnami/bitnami-docker-minio/#setting-up-minio-in-distributed-mode
+  ##
+  password:
+  ## Option to force users to specify a password. That is required for 'helm upgrade' to work properly.
+  ## If it is not force, a random password will be generated.
+  ##
+  forcePassword: false
+secretKey:
+  ## MinIO(R) Secret Key
+  ## ref: https://github.com/bitnami/bitnami-docker-minio/#setting-up-minio-in-distributed-mode
+  ##
+  password:
+  ## Option to force users to specify a password. That is required for 'helm upgrade' to work properly.
+  ## If it is not force, a random password will be generated.
+  ##
+  forcePassword: false
+
+## Comma, semi-colon or space separated list of buckets to create at initialization (only in standalone mode)
+##
+# defaultBuckets: "my-bucket, my-second-bucket"
+
+## Disable MinIO(R) Web UI
+## ref: https://github.com/minio/minio/tree/master/docs/config/#browser
+##
+disableWebUI: false
+
+## Define custom environment variables to pass to the image here
+##
+extraEnv: {}
+
+## Define a custom command for the minio container
+##
+command: {}
+
+## Security Context
+## ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/
+##
+securityContext:
+  enabled: false
+ 
+
+## MinIO(R) containers' resource requests and limits
+## ref: http://kubernetes.io/docs/user-guide/compute-resources/
+##
+
+resources:
+  limits:   
+    cpu: 200m
+    memory: 150Mi
+  requests: 
+    cpu: 100m
+    memory: 100Mi
+
+## MinIO(R) containers' liveness and readiness probes
+## ref: https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle/#container-probes
+##
+livenessProbe:
+  enabled: true
+  initialDelaySeconds: 5
+  periodSeconds: 5
+  timeoutSeconds: 5
+  successThreshold: 1
+  failureThreshold: 5
+readinessProbe:
+  enabled: true
+  initialDelaySeconds: 5
+  periodSeconds: 5
+  timeoutSeconds: 1
+  successThreshold: 1
+  failureThreshold: 5
+
+## Enable persistence using Persistent Volume Claims
+## ref: http://kubernetes.io/docs/user-guide/persistent-volumes/
+##
+persistence:
+  enabled: false
+  mountPath: /data
+  accessModes:
+    - ReadWriteOnce
+  size: 8Gi
+ 
+  annotations: {}
+
+## MinIO(R) Service properties
+##
+service:
+  ## MinIO(R) Service type
+  
+  type: ClusterIP
+
+  ## MinIO(R) Service port
+  
+  port: 9000
+
+
+
+  
+networkPolicy:
+  enabled: false
+
+  
+#prometheusAuthType: public
+
+
+

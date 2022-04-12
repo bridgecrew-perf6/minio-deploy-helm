@@ -1,0 +1,32 @@
+annotations:
+  category: Infrastructure
+apiVersion: v2
+appVersion: 2019-06-01T03-46-14Z
+
+dependencies:
+- name: common
+  repository: https://charts.bitnami.com/bitnami
+  tags:
+  - bitnami-common
+  version: 1.0.0
+description: MinIO(R) is an object storage server, compatible with Amazon S3 cloud
+  storage service, mainly used for storing unstructured data (such as photos, videos,
+  log files, etc.)
+home: https://gitlab.shasha.ir/charts/minio
+icon: https://bitnami.com/assets/stacks/minio/img/minio-stack-220x234.png
+keywords:
+- minio
+- storage
+- object-storage
+- s3
+- cluster
+maintainers:
+- email: sh.seyedsadri@gmail.com
+  name: Sharare Sadri
+
+name: minio
+sources:
+- https://gitlab.shasha.ir/charts/minio
+- https://github.com/bitnami/bitnami-docker-minio
+- https://min.io
+version: 1.1.0

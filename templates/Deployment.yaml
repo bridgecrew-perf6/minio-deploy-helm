@@ -1,0 +1,88 @@
+{{- if eq .Values.mode "standalone" }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "common.names.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels: {{- include "common.labels.standard" . | nindent 4 }}
+    {{- if .Values.commonLabels }}
+    {{- include "common.tplvalues.render" ( dict "value" .Values.commonLabels "context" $ ) | nindent 4 }}
+    {{- end }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  {{- if .Values.deployment.updateStrategy }}
+  strategy: {{ toYaml .Values.deployment.updateStrategy | nindent 4 }}
+  {{- end }}
+  selector:
+    matchLabels: {{- include "common.labels.matchLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "common.labels.standard" . | nindent 8 }}
+        {{- if .Values.commonLabels }}
+        {{- include "common.tplvalues.render" ( dict "value" .Values.commonLabels "context" $ ) | nindent 8 }}
+        {{- end }}
+    spec:
+      {{- if .Values.schedulerName }}
+      schedulerName: {{ .Values.schedulerName }}
+      {{- end }}
+      containers:
+        - args:
+            - server
+            - /data
+            - --config-dir
+            - /tmp
+          env:
+            - name: MINIO_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                    key: accesskey
+                    name: {{ include "common.names.fullname" . }}-secret  
+            - name: MINIO_SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                    key: secretkey
+                    name: {{ include "common.names.fullname" . }}-secret          
+          image:  {{ .Values.image.repository }}
+          imagePullPolicy: {{ default "" .Values.volumePermissions.image.pullPolicy | quote }}
+          name: {{ include "common.names.fullname" . }}
+          ports:
+            - containerPort : {{ .Values.service.port }}
+          readinessProbe:
+            httpGet:
+              path: /minio/health/ready
+              port: {{ .Values.service.port }}
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /minio/health/live
+              port: {{ .Values.service.port }}
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          {{- if .Values.resources }}
+          resources: 
+            limits:
+              memory: {{ .Values.resources.limits.memory }}
+              cpu: {{ .Values.resources.limits.cpu }}
+            requests:
+              memory: {{ .Values.resources.requests.memory }}
+              cpu: {{ .Values.resources.requests.cpu }}
+          {{- end }}
+          volumeMounts:
+            - name: "data-volume"
+              mountPath: {{ .Values.persistence.mountPath }}
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      schedulerName: default-scheduler
+
+      volumes:
+        - name: data-volume
+          {{- if .Values.persistence.enabled }}
+          persistentVolumeClaim:
+            claimName: {{ if .Values.persistence.existingClaim }}{{ .Values.persistence.existingClaim }}{{- else }}{{ include "common.names.fullname" . }}{{- end }}
+          {{- else }}
+          emptyDir: {}
+          {{- end }}
+          {{- end }} 
+        
